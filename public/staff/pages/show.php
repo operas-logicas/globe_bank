@@ -15,7 +15,7 @@ $subject = find_subject_by_id($page['subject_id']);
 
 <div id="content">
 
-    <a class="back_link" href="<?php echo url_for('/staff/pages/index.php'); ?>">&laquo; Back to List</a>
+    <a class="back_link" href="<?php echo url_for('/staff/subjects/show.php?id=' . h(u($subject['id']))); ?>">&laquo; Back to Subject Page</a>
 
     <div class="page show">
         <h1>Page: <?php echo h($page['menu_name']); ?></h1>
@@ -28,12 +28,12 @@ $subject = find_subject_by_id($page['subject_id']);
 
         <div class="attributes">
             <dl>
-                <dt>Menu Name</dt>
-                <dd><?php echo h($page['menu_name']); ?></dd>
-            </dl>
-            <dl>
                 <dt>Subject</dt>
                 <dd><?php echo h($subject['menu_name']); ?></dd>
+            </dl>
+            <dl>
+                <dt>Menu Name</dt>
+                <dd><?php echo h($page['menu_name']); ?></dd>
             </dl>
             <dl>
                 <dt>Position</dt>

@@ -196,6 +196,26 @@ function find_pages_by_subject_id($id, $options=[]) {
     return $result;
 }
 
+// Count pages by subject_id
+function count_pages_by_subject_id($id, $options = []) {
+    global $db;
+
+    $visible = $options['visible'] ?? false;
+
+    $sql = "SELECT COUNT(id) FROM pages ";
+    $sql .= "WHERE subject_id='" . db_escape($db, $id) . "' ";
+    if ($visible) {
+        $sql .= " AND visible=1 ";
+    }
+    $sql .= "ORDER BY position ASC";
+    $result = mysqli_query($db, $sql);
+    confirm_result_set($result);
+    $row = mysqli_fetch_row($result);
+    mysqli_free_result($result);
+    $count = $row[0];
+    return $count;
+}
+
 // Validate form submission for page
 function validate_page($page) {
     global $db;
@@ -421,7 +441,7 @@ function validate_admin($admin, $options=[]) {
     }
 
     return $errors;
-    
+
 }
 
 // Insert new admin
