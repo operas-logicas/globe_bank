@@ -65,6 +65,51 @@ function validate_subject($subject) {
     return $errors;
 }
 
+// Shift positions for subjects
+function shift_subject_positions($start_pos, $end_pos, $current_id=0) {
+    global $db;
+
+    if($start_pos == $end_pos) { return; }
+
+    $sql = "UPDATE subjects SET ";
+    if($start_pos == 0) {
+        // new item, +1 to items >= $end_pos
+        $sql .= "position = position + 1 ";
+        $sql .= "WHERE position >= '" . db_escape($db, $end_pos) . "' ";
+
+    } elseif($end_pos == 0) {
+        // delete item, -1 from items > $start_pos
+        $sql .= "position = position - 1 ";
+        $sql .= "WHERE position > '" . db_escape($db, $start_pos) . "'";
+
+    } elseif($start_pos < $end_pos) {
+        // move later, -1 from items > $start_pos and <= $end_pos
+        $sql .= "position = position - 1 ";
+        $sql .= "WHERE position > '" . db_escape($db, $start_pos) . "' ";
+        $sql .= "AND position <= '" . db_escape($db, $end_pos) . "' ";
+
+    } elseif($start_pos > $end_pos) {
+        // move earlier, +1 to items >= $end_pos and < $start_pos
+        $sql .= "position = position + 1 ";
+        $sql .= "WHERE position >= '" . db_escape($db, $end_pos) . "' ";
+        $sql .= "AND position < '" . db_escape($db, $start_pos) . "' ";
+
+    }
+    $sql .= "AND id != '" . db_escape($db, $current_id) . "'";
+
+    $result = mysqli_query($db, $sql); // returns true or false
+    if($result) {
+        // Success
+        return true;
+    } else {
+        // Update failed
+        echo mysqli_error($db);
+        db_disconnect($db);
+        exit;
+    }
+
+}
+
 // Insert new subject
 function insert_subject($subject) {
     global $db;
@@ -73,6 +118,8 @@ function insert_subject($subject) {
     if(!empty($errors)) {
         return $errors;
     }
+
+    shift_subject_positions(0, $subject['position']);
 
     $sql = "INSERT INTO subjects ";
     $sql .= "(menu_name, position, visible) ";
@@ -103,6 +150,10 @@ function update_subject($subject) {
         return $errors;
     }
 
+    $subject_before_update = find_subject_by_id($subject['id']);
+    $start_pos = $subject_before_update['position'];
+    shift_subject_positions($start_pos, $subject['position'], $subject['id']);
+
     $sql = "UPDATE subjects SET ";
     $sql .= "menu_name='" . db_escape($db, $subject['menu_name']). "', ";
     $sql .= "position='" . db_escape($db, $subject['position']) . "', ";
@@ -113,7 +164,7 @@ function update_subject($subject) {
     $result = mysqli_query($db, $sql); // returns true or false
     if($result) {
         // Success
-        return true;  
+        return true;
     } else {
         // Update failed
         echo mysqli_error($db);
@@ -125,6 +176,10 @@ function update_subject($subject) {
 // Delete subject
 function delete_subject($id) {
     global $db;
+
+    $subject_before_delete = find_subject_by_id($id);
+    $start_pos = $subject_before_delete['position'];
+    shift_subject_positions($start_pos, 0, $id);
 
     $sql = "DELETE FROM subjects ";
     $sql .= "WHERE id='" . db_escape($db, $id) . "' ";
@@ -267,6 +322,47 @@ function validate_page($page) {
     return $errors;
 }
 
+// Shift positions for pages
+function shift_page_positions($start_pos, $end_pos, $subject_id, $current_id = 0) {
+    global $db;
+
+    if($start_pos == $end_pos) { return; }
+
+    $sql = "UPDATE pages SET ";
+    if($start_pos == 0) {
+        // new item, +1 to items >= $end_pos
+        $sql .= "position = position + 1 ";
+        $sql .= "WHERE position >= '" . db_escape($db, $end_pos) . "' ";
+    } elseif($end_pos == 0) {
+        // delete item, -1 from items > $start_pos
+        $sql .= "position = position - 1 ";
+        $sql .= "WHERE position > '" . db_escape($db, $start_pos) . "'";
+    } elseif($start_pos < $end_pos) {
+        // move later, -1 from items > $start_pos and <= $end_pos
+        $sql .= "position = position - 1 ";
+        $sql .= "WHERE position > '" . db_escape($db, $start_pos) . "' ";
+        $sql .= "AND position <= '" . db_escape($db, $end_pos) . "' ";
+    } elseif($start_pos > $end_pos) {
+        // move earlier, +1 to items >= $end_pos and < $start_pos
+        $sql .= "position = position + 1 ";
+        $sql .= "WHERE position >= '" . db_escape($db, $end_pos) . "' ";
+        $sql .= "AND position < '" . db_escape($db, $start_pos) . "' ";
+    }
+    $sql .= "AND subject_id = '" . db_escape($db, $subject_id) . "' ";
+    $sql .= "AND id != '" . db_escape($db, $current_id) . "'";
+
+    $result = mysqli_query($db, $sql); // returns true or false
+    if($result) {
+        // Success
+        return true;
+    } else {
+        // Update failed
+        echo mysqli_error($db);
+        db_disconnect($db);
+        exit;
+    }
+}
+
 // Insert new page
 function insert_page($page) {
     global $db;
@@ -275,6 +371,8 @@ function insert_page($page) {
     if(!empty($errors)) {
         return $errors;
     }
+
+    shift_page_positions(0, $page['position'], $page['subject_id']);
 
     $sql = "INSERT INTO pages ";
     $sql .= "(subject_id, menu_name, position, visible, content) ";
@@ -307,6 +405,10 @@ function update_page($page) {
         return $errors;
     }
 
+    $page_before_update = find_page_by_id($page['id']);
+    $start_pos = $page_before_update['position'];
+    shift_page_positions($start_pos, $page['position'], $page['subject_id'], $page['id']);
+
     $sql = "UPDATE pages SET ";
     $sql .= "subject_id='" . db_escape($db, $page['subject_id']) . "', ";
     $sql .= "menu_name='" . db_escape($db, $page['menu_name']) . "', ";
@@ -331,6 +433,11 @@ function update_page($page) {
 // Delete page
 function delete_page($id) {
     global $db;
+
+    $page_before_delete = find_page_by_id($id);
+    $start_pos = $page_before_delete['position'];
+    $subject_id = $page_before_delete['subject_id'];
+    shift_page_positions($start_pos, 0, $subject_id, $id);
 
     $sql = "DELETE FROM pages ";
     $sql .= "WHERE id='" . db_escape($db, $id) . "' ";
