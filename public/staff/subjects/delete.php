@@ -34,7 +34,7 @@ if(is_post_request()) {
     <div class="subject delete">
         <h1>Delete Subject</h1>
         <p>Are you sure you want to delete this subject?</p>
-        <p class="item"><?php echo h($subject['menu_name']); ?></p>
+        <p class="item"><strong><?php echo h($subject['menu_name']); ?></strong></p>
 
         <form action="<?php echo url_for('/staff/subjects/delete.php?id=' . h(u($subject['id']))); ?>" method="post">
             <div id="operations">

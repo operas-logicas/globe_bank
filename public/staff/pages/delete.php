@@ -34,7 +34,7 @@ if (is_post_request()) {
         <h1>Delete Page</h1>
 
         <p>Are you sure you want to delete this page?</p>
-        <p class="item"><?php echo h($page['menu_name']); ?></p>
+        <p class="item"><strong><?php echo h($page['menu_name']); ?></strong></p>
 
         <form action="<?php echo url_for('/staff/pages/delete.php?id=' . h(u($page['id']))); ?>" method="post">
             <div id="operations">

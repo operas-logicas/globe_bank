@@ -34,7 +34,7 @@ if(is_post_request()) {
         <h1>Delete Admin</h1>
 
         <p>Are you sure you want to delete this admin?</p>
-        <p class="item"><?php echo h($admin['username']); ?></p>
+        <p class="item"><strong><?php echo h($admin['username']); ?></strong></p>
 
         <form action="<?php echo url_for('/staff/admins/delete.php?id=' . h(u($admin['id']))); ?>" method="post">
             <div id="operations">
